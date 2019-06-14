@@ -44,5 +44,46 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void readBlog(ReadBlogRequest request, StreamObserver<ReadBlogResponse> responseObserver) {
 
+        System.out.println("Received Read Blog request");
+        String blogId = request.getBlogId();
+
+        System.out.println("Searching for a blog");
+        Document result = null;
+        try {
+            result = collection.find(eq("_id", new ObjectId(blogId)))
+                    .first();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with corresponding id was not found")
+                            .augmentDescription(e.getLocalizedMessage())
+                            .asRuntimeException()
+            );
+        }
+
+        if (result == null) {
+            System.out.println("Blog not found");
+            // we don't have a match
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("The blog with corresponding id was not found")
+                            .asRuntimeException()
+            );
+        } else {
+            System.out.println("Blog found, sending response");
+            Blog blog = Blog.newBuilder()
+                    .setAuthorId(result.getString("author_id"))
+                    .setTitle(result.getString("title"))
+                    .setContent(result.getString("content"))
+                    .setId(blogId)
+                    .build();
+            responseObserver.onNext(ReadBlogResponse.newBuilder()
+                    .setBlog(blog).buildPartial()
+            );
+            responseObserver.onCompleted();
+        }
+    }
 }
