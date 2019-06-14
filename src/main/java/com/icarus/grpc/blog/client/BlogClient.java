@@ -59,5 +59,15 @@ public class BlogClient {
                 UpdateBlogRequest.newBuilder().setBlog(newBlog).build());
         System.out.println("Updated blog");
         System.out.println(updateBlogResponse.toString());
+
+        System.out.println("Deleting blog...");
+        DeleteBlogResponse deleteBlogResponse = blogClient.deleteBlog(
+                DeleteBlogRequest.newBuilder().setBlogId(blogId).build());
+        System.out.println("Deleted blog");
+
+        System.out.println("Reading blog...");
+        ReadBlogResponse readBlogResponseAfterDeletion = blogClient.readBlog(ReadBlogRequest.newBuilder()
+                .setBlogId(blogId)
+                .build());
     }
 }
